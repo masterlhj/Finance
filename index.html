@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D 아바타 인사</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // 3D 장면, 카메라, 렌더러 설정
+        let scene, camera, renderer, avatar;
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // 아바타(구체) 생성
+            const geometry = new THREE.SphereGeometry(1, 32, 32);
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            avatar = new THREE.Mesh(geometry, material);
+            scene.add(avatar);
+
+            animate();
+        }
+
+        // 애니메이션 함수
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 아바타 회전 애니메이션
+            avatar.rotation.x += 0.01;
+            avatar.rotation.y += 0.01;
+
+            renderer.render(scene, camera);
+        }
+
+        // 음성 출력 및 아바타 사라짐 처리
+        function greetAndDisappear() {
+            const message = "안녕하세요! 모바일 웹사이트에 오신 것을 환영합니다.";
+            const utterance = new SpeechSynthesisUtterance(message);
+            utterance.lang = 'ko-KR'; // 한국어 설정
+            utterance.rate = 1; // 속도 설정
+            speechSynthesis.speak(utterance);
+
+            // 음성이 끝난 후 아바타 사라지기
+            utterance.onend = function () {
+                scene.remove(avatar);
+            };
+        }
+
+        // 초기화 및 이벤트 처리
+        window.onload = function() {
+            init();
+            setTimeout(greetAndDisappear, 2000); // 2초 후 인사 및 아바타 사라짐
+        };
+
+        // 화면 크기 변경 시 캔버스 크기 조정
+        window.addEventListener('resize', function() {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+    </script>
+
+</body>
+</html>
